@@ -91,9 +91,10 @@ def read_pdf(file_storage) -> str:
 def ask_gpt(document_text: str) -> dict:
     client = get_openai_client()
     prompt = build_prompt()
+    model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
     completion = client.chat.completions.create(
-        model="gpt-5o",
+        model=model,
         messages=[
             {
                 "role": "system",
