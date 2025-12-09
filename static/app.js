@@ -94,11 +94,38 @@ function buildDetailSections(data) {
   return container;
 }
 
-function showDetails(target, record) {
-  const detailTitle = document.getElementById("detail-title");
-  const detailContent = document.getElementById("detail-content");
+function getModalElements() {
+  const modal = document.getElementById("detail-modal");
 
-  if (!detailTitle || !detailContent) {
+  if (!modal) {
+    return {};
+  }
+
+  return {
+    modal,
+    overlay: modal.querySelector("[data-close-modal].modal-overlay"),
+    closeButton: modal.querySelector("[data-close-modal].modal-close"),
+    detailTitle: modal.querySelector("#detail-title"),
+    detailContent: modal.querySelector("#detail-content"),
+  };
+}
+
+function closeModal() {
+  const { modal } = getModalElements();
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+function openModal(target, record) {
+  const { modal, detailTitle, detailContent } = getModalElements();
+
+  if (!modal || !detailTitle || !detailContent) {
     return;
   }
 
@@ -112,6 +139,28 @@ function showDetails(target, record) {
   detailTitle.textContent = target?.dataset.summary || "Dettagli record";
   detailContent.classList.remove("muted");
   detailContent.replaceChildren(buildDetailSections(record));
+
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function setupModalCloseHandlers() {
+  const { overlay, closeButton } = getModalElements();
+
+  [overlay, closeButton].forEach((element) => {
+    if (!element) {
+      return;
+    }
+
+    element.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeModal();
+    }
+  });
 }
 
 function setupTableInteractions() {
@@ -120,7 +169,7 @@ function setupTableInteractions() {
   rows.forEach((row) => {
     row.addEventListener("click", () => {
       const recordData = row.dataset.record ? JSON.parse(row.dataset.record) : {};
-      showDetails(row, recordData);
+      openModal(row, recordData);
     });
   });
 }
@@ -150,6 +199,7 @@ function setupFilePicker() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  setupModalCloseHandlers();
   setupTableInteractions();
   setupResultDetails();
   setupFilePicker();
