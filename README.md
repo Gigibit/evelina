@@ -5,6 +5,11 @@ Applicazione Flask con template Jinja per caricare un PDF di un atto notarile ed
 ## Setup
 
 1. Creare un file `.env` partendo da `.env.example` e compilare `OPENAI_API_KEY`, `OPENAI_MODEL` (opzionale, default `gpt-4o`) e `FLASK_SECRET_KEY`.
+Applicazione Flask con template Jinja per caricare un PDF di un atto notarile ed estrarre i dati strutturati utilizzando il modello `gpt-5o` di OpenAI.
+
+## Setup
+
+1. Creare un file `.env` partendo da `.env.example` e compilare `OPENAI_API_KEY` e `FLASK_SECRET_KEY`.
 2. Installare le dipendenze:
    ```bash
    pip install -r requirements.txt
