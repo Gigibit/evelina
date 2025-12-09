@@ -199,6 +199,7 @@ def list_extractions() -> list[dict]:
                 "tipo_atto": dettagli_atto.get("Tipo di atto"),
                 "data_rogito": dettagli_atto.get("Data rogito"),
                 "updated_at": row["created_at"],
+                "data": payload,
             }
         )
 
