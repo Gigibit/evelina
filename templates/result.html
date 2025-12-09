@@ -21,9 +21,18 @@
     <a href="{{ url_for('index') }}" class="back">&larr; Torna al caricamento</a>
 
     <section class="card">
-      <h2>JSON estratto</h2>
-      <pre>{{ extracted_json }}</pre>
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Dati estratti</p>
+          <h2>Visualizzazione leggibile</h2>
+        </div>
+        <p class="muted">Le informazioni sono presentate come coppie chiave: valore.</p>
+      </div>
+      <div id="result-details" class="detail-content" data-record='{{ data | tojson }}'>
+        <p class="muted">Caricamento dettagli…</p>
+      </div>
     </section>
   </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

@@ -23,13 +23,37 @@
       {% endif %}
     {% endwith %}
 
+    <section class="card upload-card">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Nuova estrazione</p>
+          <h2>Carica il PDF</h2>
+        </div>
+        <p class="muted">I dati vengono estratti e salvati automaticamente.</p>
+      </div>
+      <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="upload-form">
+        <label for="atto">Seleziona il documento</label>
+        <div class="file-picker">
+          <input type="file" id="atto" name="atto" accept="application/pdf" required class="file-input">
+          <label for="atto" class="file-label">
+            <span class="file-button">Scegli file</span>
+            <span class="file-name" id="file-name">Nessun file selezionato</span>
+          </label>
+        </div>
+        <p class="help">Se il codice fiscale non è presente il record resterà senza chiave, ma potrai comunque consultare i dati estratti.</p>
+        <div class="actions">
+          <button type="submit">Estrai dati</button>
+        </div>
+      </form>
+    </section>
+
     <section class="card">
       <div class="card-title">
         <div>
           <p class="eyebrow">Archivio</p>
           <h2>Estratti recenti</h2>
         </div>
-        <p class="muted">Se presente, il codice fiscale viene usato come chiave.</p>
+        <p class="muted">Clicca su una riga per vedere tutti i dettagli in chiaro.</p>
       </div>
       <div class="table-wrapper">
         <table class="records">
@@ -46,7 +70,7 @@
           <tbody>
             {% if records %}
               {% for record in records %}
-                <tr>
+                <tr class="record-row" data-record='{{ record.data | tojson }}' data-summary="{{ (record.nome ~ ' ' ~ record.cognome)|trim or record.codice_fiscale or 'Record' }}">
                   <td>{{ record.codice_fiscale or "—" }}</td>
                   <td>{{ record.nome or "—" }}</td>
                   <td>{{ record.cognome or "—" }}</td>
@@ -65,12 +89,17 @@
       </div>
     </section>
 
-    <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="card">
-      <label for="atto">Seleziona PDF</label>
-      <input type="file" id="atto" name="atto" accept="application/pdf" required>
-      <p class="help">L'estrazione viene salvata automaticamente. Se il codice fiscale non è presente il record resterà senza chiave.</p>
-      <button type="submit">Estrai dati</button>
-    </form>
+    <section class="card" id="details-card">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Dettagli record</p>
+          <h2 id="detail-title">Seleziona un estratto</h2>
+        </div>
+        <p class="muted">Le informazioni vengono presentate come chiave: valore per una lettura immediata.</p>
+      </div>
+      <div id="detail-content" class="detail-content muted">Scegli una riga dell'archivio per vedere tutti i dati estratti.</div>
+    </section>
   </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

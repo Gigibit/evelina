@@ -24,6 +24,13 @@ main.container {
   padding: 2rem 1.5rem 3rem;
 }
 
+.container header {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.08), rgba(99, 102, 241, 0.08));
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+}
+
 header h1 {
   margin: 0;
   font-size: 2rem;
@@ -51,12 +58,59 @@ label {
 }
 
 input[type="file"] {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
   color: var(--text);
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.file-picker {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  cursor: pointer;
+}
+
+.file-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.file-label:hover {
+  border-color: rgba(34, 211, 238, 0.6);
+  background: rgba(34, 211, 238, 0.04);
+}
+
+.file-button {
+  padding: 0.6rem 1rem;
+  background: linear-gradient(90deg, #22d3ee, #6366f1);
+  color: #0b1021;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+}
+
+.file-name {
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 button {
@@ -169,7 +223,63 @@ table.records tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.record-row {
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.record-row.is-selected td {
+  background: rgba(34, 211, 238, 0.06);
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
 table.records tr.empty td {
   text-align: center;
   color: var(--muted);
+}
+
+.detail-content {
+  margin-top: 0.5rem;
+}
+
+.detail-sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.detail-section {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.detail-section h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.05rem;
+}
+
+.definition-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.45rem 1rem;
+}
+
+.definition-list dt {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.definition-list dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+.detail-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.35rem;
 }
