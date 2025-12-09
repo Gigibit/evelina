@@ -136,9 +136,12 @@ def extract():
         flash(str(exc))
         return redirect(url_for("index"))
 
+    extracted_json = json.dumps(extracted, ensure_ascii=False, indent=2)
+
     return render_template(
         "result.html",
         data=extracted,
+        extracted_json=extracted_json,
         prompt=build_prompt(),
     )
 
