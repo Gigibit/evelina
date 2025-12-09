@@ -121,3 +121,55 @@ button:hover {
 .back:hover {
   text-decoration: underline;
 }
+
+.card-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.35rem 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+table.records {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+table.records th,
+table.records td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+table.records th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+table.records tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+table.records tr.empty td {
+  text-align: center;
+  color: var(--muted);
+}

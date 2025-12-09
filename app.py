@@ -1,6 +1,9 @@
 import json
 import os
+import sqlite3
+from contextlib import closing
 from io import BytesIO
+from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
@@ -11,6 +14,17 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "change-me")
+DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "extractions.db"))
+
+
+CREATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS extractions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codice_fiscale TEXT UNIQUE,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+"""
 
 
 DATA_FIELDS = {
@@ -44,6 +58,124 @@ DATA_FIELDS = {
 
 class ExtractionError(Exception):
     """Raised when data extraction fails."""
+
+
+def get_db_connection() -> sqlite3.Connection:
+    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(str(DATABASE_PATH))
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def _migrate_schema(connection: sqlite3.Connection) -> None:
+    columns = connection.execute("PRAGMA table_info(extractions)").fetchall()
+
+    if not columns:
+        connection.execute(CREATE_TABLE_SQL)
+        connection.commit()
+        return
+
+    column_names = {column[1] for column in columns}
+
+    if "id" in column_names:
+        return
+
+    connection.executescript(
+        """
+        ALTER TABLE extractions RENAME TO extractions_old;
+        CREATE TABLE extractions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            codice_fiscale TEXT UNIQUE,
+            data JSON NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        INSERT INTO extractions (codice_fiscale, data, created_at)
+        SELECT codice_fiscale, data, created_at FROM extractions_old;
+        DROP TABLE extractions_old;
+        """
+    )
+    connection.commit()
+
+
+def init_db() -> None:
+    with closing(get_db_connection()) as connection:
+        _migrate_schema(connection)
+
+
+def extract_codice_fiscale(data: dict) -> str | None:
+    codice = (
+        data.get("Dati anagrafici", {}).get("Codice fiscale")
+        or data.get("codice_fiscale")
+        or data.get("codice fiscale")
+    )
+
+    if isinstance(codice, str):
+        codice = codice.strip()
+
+    return codice
+
+
+def save_extraction(data: dict) -> None:
+    codice_fiscale = extract_codice_fiscale(data)
+
+    serialized = json.dumps(data, ensure_ascii=False)
+
+    with closing(get_db_connection()) as connection:
+        if codice_fiscale:
+            connection.execute(
+                """
+                INSERT INTO extractions (codice_fiscale, data, created_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(codice_fiscale) DO UPDATE SET
+                    data=excluded.data,
+                    created_at=CURRENT_TIMESTAMP
+                """,
+                (codice_fiscale, serialized),
+            )
+        else:
+            connection.execute(
+                """
+                INSERT INTO extractions (data, created_at)
+                VALUES (?, CURRENT_TIMESTAMP)
+                """,
+                (serialized,),
+            )
+        connection.commit()
+
+
+def list_extractions() -> list[dict]:
+    with closing(get_db_connection()) as connection:
+        rows = connection.execute(
+            """
+            SELECT codice_fiscale, data, created_at
+            FROM extractions
+            ORDER BY datetime(created_at) DESC
+            """
+        ).fetchall()
+
+    items = []
+    for row in rows:
+        payload = json.loads(row["data"])
+        anagrafica = payload.get("Dati anagrafici", {})
+        dettagli_atto = payload.get("Dettagli atto", {})
+        dati_immobiliari = payload.get("Dati immobiliari", {})
+
+        items.append(
+            {
+                "codice_fiscale": row["codice_fiscale"],
+                "nome": anagrafica.get("Nome"),
+                "cognome": anagrafica.get("Cognome"),
+                "indirizzo": dati_immobiliari.get("Indirizzo immobile"),
+                "tipo_atto": dettagli_atto.get("Tipo di atto"),
+                "data_rogito": dettagli_atto.get("Data rogito"),
+                "updated_at": row["created_at"],
+            }
+        )
+
+    return items
+
+
+init_db()
 
 
 def build_prompt() -> str:
@@ -118,7 +250,8 @@ def ask_gpt(document_text: str) -> dict:
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    records = list_extractions()
+    return render_template("index.html", records=records)
 
 
 @app.route("/estrai", methods=["POST"])
@@ -129,9 +262,12 @@ def extract():
         flash("Carica un file PDF per procedere.")
         return redirect(url_for("index"))
 
+    codice_fiscale = None
     try:
         document_text = read_pdf(file_storage)
         extracted = ask_gpt(document_text)
+        codice_fiscale = extract_codice_fiscale(extracted)
+        save_extraction(extracted)
     except ExtractionError as exc:
         flash(str(exc))
         return redirect(url_for("index"))
@@ -142,6 +278,7 @@ def extract():
         "result.html",
         data=extracted,
         extracted_json=extracted_json,
+        codice_fiscale=codice_fiscale,
         prompt=build_prompt(),
     )
 

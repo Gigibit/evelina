@@ -11,6 +11,11 @@
     <header>
       <h1>Risultati dell'estrazione</h1>
       <p>Ecco i dati strutturati ottenuti dal documento caricato.</p>
+      {% if codice_fiscale %}
+        <p class="eyebrow">Salvato in archivio come: {{ codice_fiscale }}</p>
+      {% else %}
+        <p class="eyebrow">Codice fiscale non presente: il record è stato salvato senza chiave.</p>
+      {% endif %}
     </header>
 
     <a href="{{ url_for('index') }}" class="back">&larr; Torna al caricamento</a>
@@ -18,11 +23,6 @@
     <section class="card">
       <h2>JSON estratto</h2>
       <pre>{{ extracted_json }}</pre>
-    </section>
-
-    <section class="card">
-      <h2>Prompt utilizzato</h2>
-      <pre>{{ prompt }}</pre>
     </section>
   </main>
 </body>

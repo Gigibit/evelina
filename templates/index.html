@@ -10,7 +10,7 @@
   <main class="container">
     <header>
       <h1>Carica un atto notarile</h1>
-      <p>Carica il PDF dell'atto notarile. L'assistente estrarrà automaticamente i dati richiesti.</p>
+      <p>Carica il PDF dell'atto notarile. I dati estratti vengono salvati in archivio utilizzando il codice fiscale come chiave.</p>
     </header>
 
     {% with messages = get_flashed_messages() %}
@@ -23,17 +23,54 @@
       {% endif %}
     {% endwith %}
 
+    <section class="card">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Archivio</p>
+          <h2>Estratti recenti</h2>
+        </div>
+        <p class="muted">Se presente, il codice fiscale viene usato come chiave.</p>
+      </div>
+      <div class="table-wrapper">
+        <table class="records">
+          <thead>
+            <tr>
+              <th>Codice fiscale</th>
+              <th>Nome</th>
+              <th>Cognome</th>
+              <th>Tipo di atto</th>
+              <th>Data rogito</th>
+              <th>Ultimo aggiornamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if records %}
+              {% for record in records %}
+                <tr>
+                  <td>{{ record.codice_fiscale or "—" }}</td>
+                  <td>{{ record.nome or "—" }}</td>
+                  <td>{{ record.cognome or "—" }}</td>
+                  <td>{{ record.tipo_atto or "—" }}</td>
+                  <td>{{ record.data_rogito or "—" }}</td>
+                  <td>{{ record.updated_at }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr class="empty">
+                <td colspan="6">Nessun dato ancora presente.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="card">
       <label for="atto">Seleziona PDF</label>
       <input type="file" id="atto" name="atto" accept="application/pdf" required>
-      <p class="help">I dati sensibili restano sul file caricato e non vengono salvati dal server.</p>
+      <p class="help">L'estrazione viene salvata automaticamente. Se il codice fiscale non è presente il record resterà senza chiave.</p>
       <button type="submit">Estrai dati</button>
     </form>
-
-    <section class="prompt-preview">
-      <h2>Prompt utilizzato</h2>
-      <pre>{{ build_prompt() }}</pre>
-    </section>
   </main>
 </body>
 </html>
