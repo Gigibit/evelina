@@ -40,8 +40,12 @@ def test_save_and_list_roundtrip():
     assert row["data_rogito"] == "2024-01-10"
 
 
-def test_missing_codice_fiscale_raises():
+def test_missing_codice_fiscale_is_stored():
     sample = {"Dati anagrafici": {"Nome": "Nessuno"}}
 
-    with pytest.raises(app.ExtractionError):
-        app.save_extraction(sample)
+    app.save_extraction(sample)
+    stored = app.list_extractions()
+
+    assert len(stored) == 1
+    assert stored[0]["codice_fiscale"] is None
+    assert stored[0]["nome"] == "Nessuno"

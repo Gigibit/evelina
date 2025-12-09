@@ -168,3 +168,8 @@ table.records th {
 table.records tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
+
+table.records tr.empty td {
+  text-align: center;
+  color: var(--muted);
+}

@@ -17,6 +17,16 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "change-me")
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "extractions.db"))
 
 
+CREATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS extractions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codice_fiscale TEXT UNIQUE,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+"""
+
+
 DATA_FIELDS = {
     "Dati anagrafici": [
         "Nome",
@@ -57,21 +67,42 @@ def get_db_connection() -> sqlite3.Connection:
     return connection
 
 
+def _migrate_schema(connection: sqlite3.Connection) -> None:
+    columns = connection.execute("PRAGMA table_info(extractions)").fetchall()
+
+    if not columns:
+        connection.execute(CREATE_TABLE_SQL)
+        connection.commit()
+        return
+
+    column_names = {column[1] for column in columns}
+
+    if "id" in column_names:
+        return
+
+    connection.executescript(
+        """
+        ALTER TABLE extractions RENAME TO extractions_old;
+        CREATE TABLE extractions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            codice_fiscale TEXT UNIQUE,
+            data JSON NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        INSERT INTO extractions (codice_fiscale, data, created_at)
+        SELECT codice_fiscale, data, created_at FROM extractions_old;
+        DROP TABLE extractions_old;
+        """
+    )
+    connection.commit()
+
+
 def init_db() -> None:
     with closing(get_db_connection()) as connection:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS extractions (
-                codice_fiscale TEXT PRIMARY KEY,
-                data JSON NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
-        connection.commit()
+        _migrate_schema(connection)
 
 
-def extract_codice_fiscale(data: dict) -> str:
+def extract_codice_fiscale(data: dict) -> str | None:
     codice = (
         data.get("Dati anagrafici", {}).get("Codice fiscale")
         or data.get("codice_fiscale")
@@ -80,9 +111,6 @@ def extract_codice_fiscale(data: dict) -> str:
 
     if isinstance(codice, str):
         codice = codice.strip()
-
-    if not codice:
-        raise ExtractionError("Il codice fiscale non è stato trovato nei dati estratti.")
 
     return codice
 
@@ -93,16 +121,25 @@ def save_extraction(data: dict) -> None:
     serialized = json.dumps(data, ensure_ascii=False)
 
     with closing(get_db_connection()) as connection:
-        connection.execute(
-            """
-            INSERT INTO extractions (codice_fiscale, data, created_at)
-            VALUES (?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT(codice_fiscale) DO UPDATE SET
-                data=excluded.data,
-                created_at=CURRENT_TIMESTAMP
-            """,
-            (codice_fiscale, serialized),
-        )
+        if codice_fiscale:
+            connection.execute(
+                """
+                INSERT INTO extractions (codice_fiscale, data, created_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(codice_fiscale) DO UPDATE SET
+                    data=excluded.data,
+                    created_at=CURRENT_TIMESTAMP
+                """,
+                (codice_fiscale, serialized),
+            )
+        else:
+            connection.execute(
+                """
+                INSERT INTO extractions (data, created_at)
+                VALUES (?, CURRENT_TIMESTAMP)
+                """,
+                (serialized,),
+            )
         connection.commit()
 
 

@@ -23,31 +23,31 @@
       {% endif %}
     {% endwith %}
 
-    {% if records %}
-      <section class="card">
-        <div class="card-title">
-          <div>
-            <p class="eyebrow">Archivio</p>
-            <h2>Estratti recenti</h2>
-          </div>
-          <p class="muted">Ogni riga è indicizzata per codice fiscale.</p>
+    <section class="card">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Archivio</p>
+          <h2>Estratti recenti</h2>
         </div>
-        <div class="table-wrapper">
-          <table class="records">
-            <thead>
-              <tr>
-                <th>Codice fiscale</th>
-                <th>Nome</th>
-                <th>Cognome</th>
-                <th>Tipo di atto</th>
-                <th>Data rogito</th>
-                <th>Ultimo aggiornamento</th>
-              </tr>
-            </thead>
-            <tbody>
+        <p class="muted">Se presente, il codice fiscale viene usato come chiave.</p>
+      </div>
+      <div class="table-wrapper">
+        <table class="records">
+          <thead>
+            <tr>
+              <th>Codice fiscale</th>
+              <th>Nome</th>
+              <th>Cognome</th>
+              <th>Tipo di atto</th>
+              <th>Data rogito</th>
+              <th>Ultimo aggiornamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if records %}
               {% for record in records %}
                 <tr>
-                  <td>{{ record.codice_fiscale }}</td>
+                  <td>{{ record.codice_fiscale or "—" }}</td>
                   <td>{{ record.nome or "—" }}</td>
                   <td>{{ record.cognome or "—" }}</td>
                   <td>{{ record.tipo_atto or "—" }}</td>
@@ -55,23 +55,22 @@
                   <td>{{ record.updated_at }}</td>
                 </tr>
               {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    {% endif %}
+            {% else %}
+              <tr class="empty">
+                <td colspan="6">Nessun dato ancora presente.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="card">
       <label for="atto">Seleziona PDF</label>
       <input type="file" id="atto" name="atto" accept="application/pdf" required>
-      <p class="help">L'estrazione viene salvata automaticamente per codice fiscale.</p>
+      <p class="help">L'estrazione viene salvata automaticamente. Se il codice fiscale non è presente il record resterà senza chiave.</p>
       <button type="submit">Estrai dati</button>
     </form>
-
-    <section class="prompt-preview">
-      <h2>Prompt utilizzato</h2>
-      <pre>{{ build_prompt() }}</pre>
-    </section>
   </main>
 </body>
 </html>
