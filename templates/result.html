@@ -8,15 +8,30 @@
 </head>
 <body>
   <main class="container">
-    <header>
-      <h1>Risultati dell'estrazione</h1>
-      <p>Ecco i dati strutturati ottenuti dal documento caricato.</p>
-      {% if codice_fiscale %}
-        <p class="eyebrow">Salvato in archivio come: {{ codice_fiscale }}</p>
-      {% else %}
-        <p class="eyebrow">Codice fiscale non presente: il record è stato salvato senza chiave.</p>
-      {% endif %}
-    </header>
+    <div class="top-bar">
+      <div class="brand-mark">
+        <img src="{{ url_for('static', filename='brand-logo.svg') }}" alt="Il Notaio per Te" />
+      </div>
+      <div class="brand-copy">
+        <p class="eyebrow">Il Notaio per Te</p>
+        <strong>Archivio digitale atti notarili</strong>
+      </div>
+    </div>
+
+    <section class="hero compact">
+      <div class="hero-copy">
+        <p class="eyebrow">Risultati dell'estrazione</p>
+        <h1>Dati strutturati pronti per l'archivio</h1>
+        <p>Ecco il dettaglio del documento caricato, presentato nel formato coerente con il brand.</p>
+      </div>
+      <div class="hero-status">
+        {% if codice_fiscale %}
+          <p class="badge">Salvato come: <strong>{{ codice_fiscale }}</strong></p>
+        {% else %}
+          <p class="badge muted">Codice fiscale non presente: record salvato senza chiave.</p>
+        {% endif %}
+      </div>
+    </section>
 
     <a href="{{ url_for('index') }}" class="back">&larr; Torna al caricamento</a>
 

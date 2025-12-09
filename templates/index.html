@@ -8,10 +8,37 @@
 </head>
 <body>
   <main class="container">
-    <header>
-      <h1>Carica un atto notarile</h1>
-      <p>Carica il PDF dell'atto notarile. I dati estratti vengono salvati in archivio utilizzando il codice fiscale come chiave.</p>
-    </header>
+    <div class="top-bar">
+      <div class="brand-mark">
+        <img src="{{ url_for('static', filename='brand-logo.svg') }}" alt="Il Notaio per Te" />
+      </div>
+      <div class="brand-copy">
+        <p class="eyebrow">Il Notaio per Te</p>
+        <strong>Archivio digitale atti notarili</strong>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Assistente notarile</p>
+        <h1>Carica l'atto e ottieni dati pronti all'uso</h1>
+        <p>Segui lo stile del brand e utilizza i loghi forniti per un'esperienza coerente e affidabile.</p>
+      </div>
+      <div class="hero-pillars">
+        <div class="pillar">
+          <p class="eyebrow">Affidabilità</p>
+          <p>Archivio versionato con aggiornamenti tracciati sul codice fiscale.</p>
+        </div>
+        <div class="pillar">
+          <p class="eyebrow">Chiarezza</p>
+          <p>Visualizzazione leggibile con sezioni tematiche e coppie chiave-valore.</p>
+        </div>
+        <div class="pillar">
+          <p class="eyebrow">Velocità</p>
+          <p>Carica un PDF, estrai e consulta subito i dati strutturati.</p>
+        </div>
+      </div>
+    </section>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
