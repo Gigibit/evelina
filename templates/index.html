@@ -116,16 +116,19 @@
       </div>
     </section>
 
-    <section class="card" id="details-card">
-      <div class="card-title">
-        <div>
-          <p class="eyebrow">Dettagli record</p>
-          <h2 id="detail-title">Seleziona un estratto</h2>
+    <div class="modal" id="detail-modal" aria-hidden="true">
+      <div class="modal-overlay" data-close-modal></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Dettagli record</p>
+            <h2 id="detail-title">Dettagli record</h2>
+          </div>
+          <button type="button" class="modal-close" aria-label="Chiudi" data-close-modal>&times;</button>
         </div>
-        <p class="muted">Le informazioni vengono presentate come chiave: valore per una lettura immediata.</p>
+        <div id="detail-content" class="detail-content muted">Seleziona una riga dell'archivio per vedere i dati estratti.</div>
       </div>
-      <div id="detail-content" class="detail-content muted">Scegli una riga dell'archivio per vedere tutti i dati estratti.</div>
-    </section>
+    </div>
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

@@ -272,11 +272,16 @@ def ask_gpt(document_text: str) -> dict:
     )
 
     content = completion.choices[0].message.content or "{}"
+    app.logger.info("Risposta OpenAI (raw): %s", content)
 
     try:
-        return json.loads(content)
+        parsed = json.loads(content)
     except json.JSONDecodeError as exc:  # pragma: no cover - depends on external API
         raise ExtractionError("La risposta dell'AI non è in formato JSON valido.") from exc
+
+    app.logger.info("Risposta OpenAI (parsed): %s", json.dumps(parsed, ensure_ascii=False, indent=2))
+
+    return parsed
 
 
 @app.route("/")
