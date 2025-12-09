@@ -11,6 +11,9 @@
     <header>
       <h1>Risultati dell'estrazione</h1>
       <p>Ecco i dati strutturati ottenuti dal documento caricato.</p>
+      {% if codice_fiscale %}
+        <p class="eyebrow">Salvato in archivio come: {{ codice_fiscale }}</p>
+      {% endif %}
     </header>
 
     <a href="{{ url_for('index') }}" class="back">&larr; Torna al caricamento</a>

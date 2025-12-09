@@ -10,7 +10,7 @@
   <main class="container">
     <header>
       <h1>Carica un atto notarile</h1>
-      <p>Carica il PDF dell'atto notarile. L'assistente estrarrà automaticamente i dati richiesti.</p>
+      <p>Carica il PDF dell'atto notarile. I dati estratti vengono salvati in archivio utilizzando il codice fiscale come chiave.</p>
     </header>
 
     {% with messages = get_flashed_messages() %}
@@ -23,10 +23,48 @@
       {% endif %}
     {% endwith %}
 
+    {% if records %}
+      <section class="card">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Archivio</p>
+            <h2>Estratti recenti</h2>
+          </div>
+          <p class="muted">Ogni riga è indicizzata per codice fiscale.</p>
+        </div>
+        <div class="table-wrapper">
+          <table class="records">
+            <thead>
+              <tr>
+                <th>Codice fiscale</th>
+                <th>Nome</th>
+                <th>Cognome</th>
+                <th>Tipo di atto</th>
+                <th>Data rogito</th>
+                <th>Ultimo aggiornamento</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in records %}
+                <tr>
+                  <td>{{ record.codice_fiscale }}</td>
+                  <td>{{ record.nome or "—" }}</td>
+                  <td>{{ record.cognome or "—" }}</td>
+                  <td>{{ record.tipo_atto or "—" }}</td>
+                  <td>{{ record.data_rogito or "—" }}</td>
+                  <td>{{ record.updated_at }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+
     <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="card">
       <label for="atto">Seleziona PDF</label>
       <input type="file" id="atto" name="atto" accept="application/pdf" required>
-      <p class="help">I dati sensibili restano sul file caricato e non vengono salvati dal server.</p>
+      <p class="help">L'estrazione viene salvata automaticamente per codice fiscale.</p>
       <button type="submit">Estrai dati</button>
     </form>
 
