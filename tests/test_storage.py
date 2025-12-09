@@ -49,3 +49,35 @@ def test_missing_codice_fiscale_is_stored():
     assert len(stored) == 1
     assert stored[0]["codice_fiscale"] is None
     assert stored[0]["nome"] == "Nessuno"
+
+
+def test_snake_case_sections_are_supported():
+    sample = {
+        "dati_anagrafici": {
+            "Nome": "KHALED",
+            "Cognome": "ELGOHARY",
+            "Codice fiscale": "LGH KLD 68M07 Z336W",
+            "Data di nascita": "7 agosto 1968",
+            "Indirizzo": "Viale Fulvio Testi n. 198, Cinisello Balsamo (MI)",
+        },
+        "Dati catastali": {
+            "Foglio": "40",
+            "Particella": "52",
+            "Subalterno": "28",
+            "Categoria catastale": "A/3",
+            "Rendita": "258,23 euro",
+        },
+        "Dati immobiliari": {
+            "Indirizzo immobile": "Viale delle Rimembranze n. 191, Sesto San Giovanni (MI)",
+            "Tipologia immobile": "appartamento",
+            "Quote di proprietà": "100%",
+        },
+    }
+
+    app.save_extraction(sample)
+    stored = app.list_extractions()
+
+    assert len(stored) == 1
+    assert stored[0]["codice_fiscale"] == "LGH KLD 68M07 Z336W"
+    assert stored[0]["nome"] == "KHALED"
+    assert stored[0]["cognome"] == "ELGOHARY"

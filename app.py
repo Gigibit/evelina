@@ -102,12 +102,35 @@ def init_db() -> None:
         _migrate_schema(connection)
 
 
+def _normalize_key(key: str) -> str:
+    return key.strip().lower().replace(" ", "_")
+
+
+def _get_value_by_keys(data: dict, keys: list[str]):
+    if not isinstance(data, dict):
+        return None
+
+    normalized_mapping = {_normalize_key(k): v for k, v in data.items()}
+
+    for key in keys:
+        normalized_key = _normalize_key(key)
+        if normalized_key in normalized_mapping:
+            return normalized_mapping[normalized_key]
+
+    return None
+
+
 def extract_codice_fiscale(data: dict) -> str | None:
-    codice = (
-        data.get("Dati anagrafici", {}).get("Codice fiscale")
-        or data.get("codice_fiscale")
-        or data.get("codice fiscale")
-    )
+    codice = _get_value_by_keys(data, ["codice_fiscale", "codice fiscale"])
+
+    if codice is None:
+        anagrafica = _get_value_by_keys(
+            data, ["dati_anagrafici", "dati anagrafici", "Dati anagrafici"]
+        )
+        if isinstance(anagrafica, dict):
+            codice = _get_value_by_keys(
+                anagrafica, ["codice_fiscale", "codice fiscale", "Codice fiscale"]
+            )
 
     if isinstance(codice, str):
         codice = codice.strip()
@@ -156,9 +179,16 @@ def list_extractions() -> list[dict]:
     items = []
     for row in rows:
         payload = json.loads(row["data"])
-        anagrafica = payload.get("Dati anagrafici", {})
-        dettagli_atto = payload.get("Dettagli atto", {})
-        dati_immobiliari = payload.get("Dati immobiliari", {})
+        anagrafica = _get_value_by_keys(
+            payload, ["dati_anagrafici", "dati anagrafici", "Dati anagrafici"]
+        ) or {}
+        dettagli_atto = _get_value_by_keys(
+            payload, ["dettagli_atto", "dettagli atto", "Dettagli atto"]
+        ) or {}
+        dati_immobiliari = _get_value_by_keys(
+            payload,
+            ["dati_immobiliari", "dati immobiliari", "Dati immobiliari"],
+        ) or {}
 
         items.append(
             {
