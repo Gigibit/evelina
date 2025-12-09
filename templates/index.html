@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estrazione dati atto notarile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Carica un atto notarile</h1>
+      <p>Carica il PDF dell'atto notarile. L'assistente estrarrà automaticamente i dati richiesti.</p>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="card">
+      <label for="atto">Seleziona PDF</label>
+      <input type="file" id="atto" name="atto" accept="application/pdf" required>
+      <p class="help">I dati sensibili restano sul file caricato e non vengono salvati dal server.</p>
+      <button type="submit">Estrai dati</button>
+    </form>
+
+    <section class="prompt-preview">
+      <h2>Prompt utilizzato</h2>
+      <pre>{{ build_prompt() }}</pre>
+    </section>
+  </main>
+</body>
+</html>
