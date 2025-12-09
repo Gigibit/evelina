@@ -15,6 +15,18 @@ function formatValue(value) {
   return String(value);
 }
 
+function formatLabel(label) {
+  if (label === null || label === undefined) {
+    return "";
+  }
+
+  return String(label)
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-zà-ù])([A-ZÀ-Ù])/g, "$1 $2")
+    .replace(/([A-ZÀ-Ù])([A-ZÀ-Ù][a-zà-ù])/g, "$1 $2")
+    .trim();
+}
+
 function renderValueNode(value) {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return renderDefinitions(Object.entries(value));
@@ -55,7 +67,7 @@ function renderDefinitions(entries) {
 
   entries.forEach(([label, value]) => {
     const dt = document.createElement("dt");
-    dt.textContent = label;
+    dt.textContent = formatLabel(label) || "—";
 
     const dd = document.createElement("dd");
     dd.appendChild(renderValueNode(value));
@@ -83,7 +95,7 @@ function buildDetailSections(data) {
     section.className = "detail-section";
 
     const heading = document.createElement("h3");
-    heading.textContent = sectionTitle;
+    heading.textContent = formatLabel(sectionTitle) || "Sezione";
     section.appendChild(heading);
 
     section.appendChild(renderValueNode(value));
@@ -94,33 +106,55 @@ function buildDetailSections(data) {
   return container;
 }
 
-function showDetails(target, record) {
-  const detailTitle = document.getElementById("detail-title");
-  const detailContent = document.getElementById("detail-content");
-
-  if (!detailTitle || !detailContent) {
-    return;
+function setupModal() {
+  const modal = document.getElementById("record-modal");
+  if (!modal) {
+    return null;
   }
 
-  document.querySelectorAll(".record-row.is-selected").forEach((row) => {
-    row.classList.remove("is-selected");
+  const closeModal = () => {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+  };
+
+  modal.querySelectorAll("[data-close-modal]").forEach((node) => {
+    node.addEventListener("click", closeModal);
   });
-  if (target) {
-    target.classList.add("is-selected");
-  }
 
-  detailTitle.textContent = target?.dataset.summary || "Dettagli record";
-  detailContent.classList.remove("muted");
-  detailContent.replaceChildren(buildDetailSections(record));
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-open")) {
+      closeModal();
+    }
+  });
+
+  return {
+    element: modal,
+    close: closeModal,
+  };
 }
 
 function setupTableInteractions() {
+  const modal = setupModal();
+  const modalTitle = document.getElementById("record-modal-title");
+  const modalBody = document.getElementById("record-modal-body");
+
+  if (!modal || !modalTitle || !modalBody) {
+    return;
+  }
+
   const rows = document.querySelectorAll(".record-row[data-record]");
 
   rows.forEach((row) => {
     row.addEventListener("click", () => {
       const recordData = row.dataset.record ? JSON.parse(row.dataset.record) : {};
-      showDetails(row, recordData);
+      const title = row.dataset.summary?.trim() || "Dettagli record";
+
+      modalTitle.textContent = title;
+      modalBody.classList.remove("muted");
+      modalBody.replaceChildren(buildDetailSections(recordData));
+
+      modal.element.classList.add("is-open");
+      modal.element.setAttribute("aria-hidden", "false");
     });
   });
 }
