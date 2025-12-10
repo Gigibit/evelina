@@ -254,6 +254,110 @@ function renderAppointments(list) {
     });
 }
 
+function renderCalendar(appointments, referenceDate) {
+  const calendar = document.getElementById("appointment-calendar");
+  const currentLabel = document.getElementById("calendar-current");
+
+  if (!calendar || !currentLabel) {
+    return;
+  }
+
+  const monthFormatter = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" });
+  const dayFormatter = new Intl.DateTimeFormat("it-IT", { weekday: "short" });
+
+  const normalizedReference = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1);
+  const monthStart = normalizedReference;
+  const startOffset = (monthStart.getDay() + 6) % 7; // Monday as first day
+  const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate();
+  const cells = [];
+
+  for (let i = 0; i < startOffset; i += 1) {
+    cells.push(null);
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(new Date(monthStart.getFullYear(), monthStart.getMonth(), day));
+  }
+
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+
+  const grouped = (appointments || []).reduce((acc, appointment) => {
+    if (!appointment.date) {
+      return acc;
+    }
+
+    acc[appointment.date] = acc[appointment.date] || [];
+    acc[appointment.date].push(appointment);
+    return acc;
+  }, {});
+
+  calendar.replaceChildren();
+  currentLabel.textContent = monthFormatter.format(normalizedReference);
+
+  const headerRow = document.createElement("div");
+  headerRow.className = "calendar-grid calendar-header";
+  const weekdays = Array.from({ length: 7 }).map((_, index) => {
+    const reference = new Date(2023, 5, index + 5); // Monday reference week
+    const label = dayFormatter.format(reference);
+    return label.charAt(0).toUpperCase() + label.slice(1, 3);
+  });
+
+  weekdays.forEach((day) => {
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell is-label";
+    cell.textContent = day;
+    headerRow.appendChild(cell);
+  });
+
+  calendar.appendChild(headerRow);
+
+  const bodyGrid = document.createElement("div");
+  bodyGrid.className = "calendar-grid";
+
+  cells.forEach((cellDate) => {
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell";
+
+    if (!cellDate) {
+      cell.classList.add("is-empty");
+      bodyGrid.appendChild(cell);
+      return;
+    }
+
+    const label = document.createElement("div");
+    label.className = "calendar-day";
+    label.textContent = cellDate.getDate();
+
+    const dateKey = cellDate.toISOString().slice(0, 10);
+    const dayAppointments = grouped[dateKey] || [];
+
+    cell.appendChild(label);
+
+    if (dayAppointments.length) {
+      cell.classList.add("has-appointments");
+
+      const list = document.createElement("ul");
+      list.className = "calendar-events";
+
+      dayAppointments
+        .sort((a, b) => (a.time || "").localeCompare(b.time || ""))
+        .forEach((item) => {
+          const event = document.createElement("li");
+          event.innerHTML = `<strong>${item.title || "Appuntamento"}</strong>${item.time ? ` · ${item.time}` : ""}`;
+          list.appendChild(event);
+        });
+
+      cell.appendChild(list);
+    }
+
+    bodyGrid.appendChild(cell);
+  });
+
+  calendar.appendChild(bodyGrid);
+}
+
 function renderBookings(list) {
   const container = document.getElementById("booking-list");
   if (!container) {
@@ -378,7 +482,12 @@ function setupAgenda() {
     },
   ]);
 
+  let calendarReference = new Date();
+
   renderAppointments(appointments);
+  renderCalendar(appointments, calendarReference);
+
+  const updateCalendar = () => renderCalendar(appointments, calendarReference);
 
   appointmentForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -394,8 +503,24 @@ function setupAgenda() {
     const updated = appointments;
     saveToStorage("appointments", updated);
     renderAppointments(updated);
+    updateCalendar();
     appointmentForm.reset();
   });
+
+  const prev = document.getElementById("calendar-prev");
+  const next = document.getElementById("calendar-next");
+
+  if (prev && next) {
+    prev.addEventListener("click", () => {
+      calendarReference = new Date(calendarReference.getFullYear(), calendarReference.getMonth() - 1, 1);
+      updateCalendar();
+    });
+
+    next.addEventListener("click", () => {
+      calendarReference = new Date(calendarReference.getFullYear(), calendarReference.getMonth() + 1, 1);
+      updateCalendar();
+    });
+  }
 }
 
 function setupBookings() {
@@ -504,22 +629,22 @@ function setupProfile() {
 }
 
 function setupTaskbarNavigation() {
-  const buttons = document.querySelectorAll(".taskbar-btn[data-scroll-target]");
+  const buttons = document.querySelectorAll(".taskbar-btn[data-panel-target]");
+  const panels = document.querySelectorAll(".panel[data-panel]");
 
-  if (!buttons.length) {
+  if (!buttons.length || !panels.length) {
     return;
   }
 
-  const sections = Array.from(buttons)
-    .map((button) => {
-      const target = document.querySelector(button.dataset.scrollTarget);
-      return target ? { button, target } : null;
-    })
-    .filter(Boolean);
+  const showPanel = (panelName) => {
+    panels.forEach((panel) => {
+      const isActive = panel.dataset.panel === panelName;
+      panel.classList.toggle("is-active", isActive);
+      panel.toggleAttribute("hidden", !isActive);
+    });
 
-  const activateButton = (activeButton) => {
     buttons.forEach((button) => {
-      if (button === activeButton) {
+      if (button.dataset.panelTarget === panelName) {
         button.classList.add("is-active");
       } else {
         button.classList.remove("is-active");
@@ -527,27 +652,12 @@ function setupTaskbarNavigation() {
     });
   };
 
-  sections.forEach(({ button, target }) => {
-    button.addEventListener("click", () => {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      activateButton(button);
-    });
+  const initial = document.querySelector(".taskbar-btn.is-active")?.dataset.panelTarget || panels[0].dataset.panel;
+  showPanel(initial);
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => showPanel(button.dataset.panelTarget));
   });
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const entry = entries.find((item) => item.isIntersecting);
-      if (entry) {
-        const match = sections.find((section) => section.target === entry.target);
-        if (match) {
-          activateButton(match.button);
-        }
-      }
-    },
-    { rootMargin: "-50% 0px -40% 0px", threshold: [0, 1] },
-  );
-
-  sections.forEach(({ target }) => observer.observe(target));
 }
 
 window.addEventListener("DOMContentLoaded", () => {
