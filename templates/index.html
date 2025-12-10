@@ -7,6 +7,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <header class="taskbar" aria-label="Navigazione principale">
+    <div class="taskbar-brand">
+      <img src="{{ url_for('static', filename='brand-logo.svg') }}" alt="Il Notaio per Te" />
+      <div>
+        <p class="eyebrow">Il Notaio per Te</p>
+        <strong>Scrivania Notarile</strong>
+      </div>
+    </div>
+    <nav class="taskbar-nav" aria-label="Sezioni applicazione">
+      <button type="button" class="taskbar-btn is-active" data-scroll-target="#archivio">Archivio atti</button>
+      <button type="button" class="taskbar-btn" data-scroll-target="#appuntamenti">Appuntamenti</button>
+      <button type="button" class="taskbar-btn" data-scroll-target="#prenotazioni">Prenotazioni</button>
+      <button type="button" class="taskbar-btn" data-scroll-target="#comunicazioni">Comunicazioni</button>
+      <button type="button" class="taskbar-btn" data-scroll-target="#profilo">Profilo</button>
+    </nav>
+  </header>
+
   <main class="container">
     <div class="top-bar">
       <div class="brand-mark">
@@ -46,7 +63,7 @@
       {% endif %}
     {% endwith %}
 
-    <section class="card upload-card">
+    <section class="card upload-card" id="archivio">
       <div class="card-title">
         <div>
           <p class="eyebrow">Nuova estrazione</p>
@@ -70,11 +87,11 @@
       </form>
     </section>
 
-    <section class="card">
+    <section class="card" aria-labelledby="archivio-titolo">
       <div class="card-title">
         <div>
           <p class="eyebrow">Archivio</p>
-          <h2>Estratti recenti</h2>
+          <h2 id="archivio-titolo">Estratti recenti</h2>
         </div>
         <p class="muted">Clicca su una riga per vedere tutti i dettagli in chiaro.</p>
       </div>
@@ -113,6 +130,155 @@
             {% endif %}
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <section class="card" id="appuntamenti">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Agenda di studio</p>
+          <h2>Calendario appuntamenti</h2>
+        </div>
+        <p class="muted">Gestisci incontri e scadenze con vista immediata sul calendario settimanale.</p>
+      </div>
+      <div class="grid two-cols">
+        <div class="stack">
+          <form id="appointment-form" class="stack" autocomplete="off">
+            <label for="appointment-title">Titolo appuntamento</label>
+            <input type="text" id="appointment-title" name="title" required placeholder="Esempio: Firma atto di compravendita">
+
+            <div class="grid two-cols compact">
+              <div>
+                <label for="appointment-date">Data</label>
+                <input type="date" id="appointment-date" name="date" required>
+              </div>
+              <div>
+                <label for="appointment-time">Ora</label>
+                <input type="time" id="appointment-time" name="time" required>
+              </div>
+            </div>
+
+            <label for="appointment-notes">Note</label>
+            <textarea id="appointment-notes" name="notes" rows="3" placeholder="Dettagli utili, recapiti o documentazione richiesta"></textarea>
+
+            <div class="actions">
+              <button type="submit">Aggiungi all'agenda</button>
+            </div>
+          </form>
+        </div>
+        <div class="stack">
+          <div class="pill-label">Prossimi appuntamenti</div>
+          <ul id="appointment-list" class="timeline" aria-live="polite">
+            <li class="muted">Nessun appuntamento pianificato.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="prenotazioni">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Prenotazioni</p>
+          <h2>Prenota un nuovo incontro</h2>
+        </div>
+        <p class="muted">Traccia le richieste di appuntamento e monitora lo stato di ciascuna.</p>
+      </div>
+      <div class="grid two-cols">
+        <div class="stack">
+          <form id="booking-form" class="stack" autocomplete="off">
+            <label for="booking-purpose">Motivo</label>
+            <input type="text" id="booking-purpose" name="purpose" required placeholder="Esempio: Predisposizione mutuo">
+
+            <label for="booking-date">Data preferita</label>
+            <input type="date" id="booking-date" name="date" required>
+
+            <label for="booking-channel">Canale</label>
+            <select id="booking-channel" name="channel" required>
+              <option value="In presenza">In presenza</option>
+              <option value="Videochiamata">Videochiamata</option>
+              <option value="Telefono">Telefono</option>
+            </select>
+
+            <label for="booking-notes">Note per lo studio</label>
+            <textarea id="booking-notes" name="notes" rows="3" placeholder="Specifiche, documenti o preferenze"></textarea>
+
+            <div class="actions">
+              <button type="submit">Inserisci prenotazione</button>
+            </div>
+          </form>
+        </div>
+        <div class="stack">
+          <div class="pill-label">Richieste recenti</div>
+          <ul id="booking-list" class="card-list" aria-live="polite">
+            <li class="muted">Nessuna prenotazione ancora inserita.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="comunicazioni">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Comunicazioni</p>
+          <h2>Messaggi dallo studio</h2>
+        </div>
+        <p class="muted">Condividi aggiornamenti operativi con clienti e collaboratori.</p>
+      </div>
+      <div class="grid two-cols">
+        <div class="stack">
+          <form id="communication-form" class="stack" autocomplete="off">
+            <label for="communication-title">Titolo</label>
+            <input type="text" id="communication-title" name="title" required placeholder="Avviso di firma">
+
+            <label for="communication-body">Testo</label>
+            <textarea id="communication-body" name="body" rows="3" required placeholder="Aggiornamento o indicazioni operative"></textarea>
+
+            <div class="actions">
+              <button type="submit">Pubblica comunicazione</button>
+            </div>
+          </form>
+        </div>
+        <div class="stack">
+          <div class="pill-label">Cronologia</div>
+          <ul id="communication-list" class="timeline" aria-live="polite">
+            <li class="muted">Ancora nessuna comunicazione.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="profilo">
+      <div class="card-title">
+        <div>
+          <p class="eyebrow">Profilo</p>
+          <h2>Le tue informazioni</h2>
+        </div>
+        <p class="muted">Aggiorna contatti e preferenze per sincronizzare le notifiche.</p>
+      </div>
+      <div class="grid two-cols compact">
+        <form id="profile-form" class="stack" autocomplete="off">
+          <label for="profile-name">Nome completo</label>
+          <input type="text" id="profile-name" name="name" placeholder="Nome e cognome">
+
+          <label for="profile-role">Ruolo</label>
+          <input type="text" id="profile-role" name="role" placeholder="Notaio, assistente, legale">
+
+          <label for="profile-email">Email</label>
+          <input type="email" id="profile-email" name="email" placeholder="nome@studio.it">
+
+          <label for="profile-phone">Telefono</label>
+          <input type="tel" id="profile-phone" name="phone" placeholder="Recapito diretto">
+
+          <div class="actions">
+            <button type="submit">Salva profilo</button>
+          </div>
+        </form>
+        <div class="stack">
+          <div class="pill-label">Anteprima profilo</div>
+          <div id="profile-summary" class="detail-section">
+            <p class="muted">Completa i campi per vedere un riepilogo pronto all'uso.</p>
+          </div>
+        </div>
       </div>
     </section>
 
