@@ -7,6 +7,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <header class="taskbar" aria-label="Navigazione principale">
+    <div class="taskbar-brand">
+      <img src="{{ url_for('static', filename='brand-logo.svg') }}" alt="Il Notaio per Te" />
+      <div>
+        <p class="eyebrow">Il Notaio per Te</p>
+        <strong>Scrivania Notarile</strong>
+      </div>
+    </div>
+    <nav class="taskbar-nav" aria-label="Sezioni applicazione">
+      <button type="button" class="taskbar-btn is-active" data-panel-target="archivio">Archivio atti</button>
+      <button type="button" class="taskbar-btn" data-panel-target="appuntamenti">Appuntamenti</button>
+      <button type="button" class="taskbar-btn" data-panel-target="prenotazioni">Prenotazioni</button>
+      <button type="button" class="taskbar-btn" data-panel-target="comunicazioni">Comunicazioni</button>
+      <button type="button" class="taskbar-btn" data-panel-target="profilo">Profilo</button>
+    </nav>
+  </header>
+
   <main class="container">
     <div class="top-bar">
       <div class="brand-mark">
@@ -18,102 +35,319 @@
       </div>
     </div>
 
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Assistente notarile</p>
-        <h1>Carica l'atto e ottieni dati pronti all'uso</h1>
-        <p>Segui lo stile del brand e utilizza i loghi forniti per un'esperienza coerente e affidabile.</p>
-      </div>
-      <div class="hero-pillars">
-        <div class="pillar">
-          <p class="eyebrow">Affidabilità</p>
-          <p>Archivio versionato con aggiornamenti tracciati sul codice fiscale.</p>
+    <section class="panel is-active" data-panel="archivio">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Assistente notarile</p>
+          <h1>Carica l'atto e ottieni dati pronti all'uso</h1>
+          <p>Segui lo stile del brand e utilizza i loghi forniti per un'esperienza coerente e affidabile.</p>
         </div>
-        <div class="pillar">
-          <p class="eyebrow">Velocità</p>
-          <p>Carica un PDF, estrai e consulta subito i dati strutturati.</p>
+        <div class="hero-pillars">
+          <div class="pillar">
+            <p class="eyebrow">Affidabilità</p>
+            <p>Archivio versionato con aggiornamenti tracciati sul codice fiscale.</p>
+          </div>
+          <div class="pillar">
+            <p class="eyebrow">Velocità</p>
+            <p>Carica un PDF, estrai e consulta subito i dati strutturati.</p>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert">
-          {% for message in messages %}
-            <p>{{ message }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert">
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
-    <section class="card upload-card">
-      <div class="card-title">
-        <div>
-          <p class="eyebrow">Nuova estrazione</p>
-          <h2>Carica il PDF</h2>
+      <section class="card upload-card" id="archivio">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Nuova estrazione</p>
+            <h2>Carica il PDF</h2>
+          </div>
+          <p class="muted">I dati vengono estratti e salvati automaticamente.</p>
         </div>
-        <p class="muted">I dati vengono estratti e salvati automaticamente.</p>
-      </div>
-      <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="upload-form">
-        <label for="atto">Seleziona il documento</label>
-        <div class="file-picker">
-          <input type="file" id="atto" name="atto" accept="application/pdf" required class="file-input">
-          <label for="atto" class="file-label">
-            <span class="file-button">Scegli file</span>
-            <span class="file-name" id="file-name">Nessun file selezionato</span>
-          </label>
-        </div>
-        <p class="help">Se il codice fiscale non è presente il record resterà senza chiave, ma potrai comunque consultare i dati estratti.</p>
-        <div class="actions">
-          <button type="submit">Estrai dati</button>
-        </div>
-      </form>
-    </section>
+        <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data" class="upload-form">
+          <label for="atto">Seleziona il documento</label>
+          <div class="file-picker">
+            <input type="file" id="atto" name="atto" accept="application/pdf" required class="file-input">
+            <label for="atto" class="file-label">
+              <span class="file-button">Scegli file</span>
+              <span class="file-name" id="file-name">Nessun file selezionato</span>
+            </label>
+          </div>
+          <p class="help">Se il codice fiscale non è presente il record resterà senza chiave, ma potrai comunque consultare i dati estratti.</p>
+          <div class="actions">
+            <button type="submit">Estrai dati</button>
+          </div>
+        </form>
+      </section>
 
-    <section class="card">
-      <div class="card-title">
-        <div>
-          <p class="eyebrow">Archivio</p>
-          <h2>Estratti recenti</h2>
+      <section class="card" aria-labelledby="archivio-titolo">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Archivio</p>
+            <h2 id="archivio-titolo">Estratti recenti</h2>
+          </div>
+          <p class="muted">Clicca su una riga per vedere tutti i dettagli in chiaro.</p>
         </div>
-        <p class="muted">Clicca su una riga per vedere tutti i dettagli in chiaro.</p>
-      </div>
-      <div class="table-wrapper">
-        <table class="records">
-          <thead>
-            <tr>
-              <th>Codice fiscale</th>
-              <th>Nome</th>
-              <th>Cognome</th>
-              <th>Tipo di atto</th>
-              <th>Data rogito</th>
-              <th>Ultimo aggiornamento</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% if records %}
-              {% for record in records %}
-                <tr
-                  class="record-row"
-                  data-record='{{ record.data | tojson }}'
-                  data-summary="{{ ((record.nome | default('')) ~ ' ' ~ (record.cognome | default('')))|trim or record.codice_fiscale or 'Record' }}"
-                >
-                  <td>{{ record.codice_fiscale or "—" }}</td>
-                  <td>{{ record.nome or "—" }}</td>
-                  <td>{{ record.cognome or "—" }}</td>
-                  <td>{{ record.tipo_atto or "—" }}</td>
-                  <td>{{ record.data_rogito or "—" }}</td>
-                  <td>{{ record.updated_at }}</td>
-                </tr>
-              {% endfor %}
-            {% else %}
-              <tr class="empty">
-                <td colspan="6">Nessun dato ancora presente.</td>
+        <div class="table-wrapper">
+          <table class="records">
+            <thead>
+              <tr>
+                <th>Codice fiscale</th>
+                <th>Nome</th>
+                <th>Cognome</th>
+                <th>Tipo di atto</th>
+                <th>Data rogito</th>
+                <th>Ultimo aggiornamento</th>
               </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {% if records %}
+                {% for record in records %}
+                  <tr
+                    class="record-row"
+                    data-record='{{ record.data | tojson }}'
+                    data-summary="{{ ((record.nome | default('')) ~ ' ' ~ (record.cognome | default('')))|trim or record.codice_fiscale or 'Record' }}"
+                  >
+                    <td>{{ record.codice_fiscale or "—" }}</td>
+                    <td>{{ record.nome or "—" }}</td>
+                    <td>{{ record.cognome or "—" }}</td>
+                    <td>{{ record.tipo_atto or "—" }}</td>
+                    <td>{{ record.data_rogito or "—" }}</td>
+                    <td>{{ record.updated_at }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr class="empty">
+                  <td colspan="6">Nessun dato ancora presente.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" data-panel="appuntamenti" id="appuntamenti">
+      <section class="hero compact">
+        <div class="hero-copy">
+          <p class="eyebrow">Agenda di studio</p>
+          <h1>Calendario appuntamenti</h1>
+          <p>Gestisci ogni appuntamento in una vista dedicata, senza mescolare altre aree di lavoro.</p>
+        </div>
+        <div class="hero-pillars">
+          <div class="pillar">
+            <p class="eyebrow">Calendario</p>
+            <p>Visualizza il mese con le date prenotate evidenziate.</p>
+          </div>
+          <div class="pillar">
+            <p class="eyebrow">Agenda</p>
+            <p>Inserisci rapidamente titoli, orari e note utili.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Appuntamenti</p>
+            <h2>Programma e consulta</h2>
+          </div>
+          <p class="muted">Inserisci i dati essenziali e tieni traccia dei prossimi impegni.</p>
+        </div>
+        <div class="grid two-cols">
+          <div class="stack">
+            <form id="appointment-form" class="stack" autocomplete="off">
+              <label for="appointment-title">Titolo appuntamento</label>
+              <input type="text" id="appointment-title" name="title" required placeholder="Esempio: Firma atto di compravendita">
+
+              <div class="grid two-cols compact">
+                <div>
+                  <label for="appointment-date">Data</label>
+                  <input type="date" id="appointment-date" name="date" required>
+                </div>
+                <div>
+                  <label for="appointment-time">Ora</label>
+                  <input type="time" id="appointment-time" name="time" required>
+                </div>
+              </div>
+
+              <label for="appointment-notes">Note</label>
+              <textarea id="appointment-notes" name="notes" rows="3" placeholder="Dettagli utili, recapiti o documentazione richiesta"></textarea>
+
+              <div class="actions">
+                <button type="submit">Aggiungi all'agenda</button>
+              </div>
+            </form>
+          </div>
+          <div class="stack">
+            <div class="pill-label">Prossimi appuntamenti</div>
+            <ul id="appointment-list" class="timeline" aria-live="polite">
+              <li class="muted">Nessun appuntamento pianificato.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="card calendar-card" aria-labelledby="calendar-title">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Vista mensile</p>
+            <h2 id="calendar-title">Calendario appuntamenti</h2>
+          </div>
+          <div class="calendar-controls" aria-label="Navigazione calendario">
+            <button type="button" id="calendar-prev" aria-label="Mese precedente">&#8592;</button>
+            <p id="calendar-current" class="muted">Mese attuale</p>
+            <button type="button" id="calendar-next" aria-label="Mese successivo">&#8594;</button>
+          </div>
+        </div>
+        <div id="appointment-calendar" class="calendar" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section class="panel" data-panel="prenotazioni" id="prenotazioni">
+      <section class="hero compact">
+        <div class="hero-copy">
+          <p class="eyebrow">Prenotazioni</p>
+          <h1>Richieste di appuntamento</h1>
+          <p>Gestisci le richieste in arrivo e trasformale in appuntamenti confermati.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Prenotazioni</p>
+            <h2>Prenota un appuntamento</h2>
+          </div>
+          <p class="muted">Traccia le richieste e monitora lo stato di ciascuna.</p>
+        </div>
+        <div class="grid two-cols">
+          <div class="stack">
+            <form id="booking-form" class="stack" autocomplete="off">
+              <label for="booking-purpose">Motivo</label>
+              <input type="text" id="booking-purpose" name="purpose" required placeholder="Esempio: Predisposizione mutuo">
+
+              <label for="booking-date">Data preferita</label>
+              <input type="date" id="booking-date" name="date" required>
+
+              <label for="booking-channel">Canale</label>
+              <select id="booking-channel" name="channel" required>
+                <option value="In presenza">In presenza</option>
+                <option value="Videochiamata">Videochiamata</option>
+                <option value="Telefono">Telefono</option>
+              </select>
+
+              <label for="booking-notes">Note per lo studio</label>
+              <textarea id="booking-notes" name="notes" rows="3" placeholder="Specifiche, documenti o preferenze"></textarea>
+
+              <div class="actions">
+                <button type="submit">Inserisci prenotazione</button>
+              </div>
+            </form>
+          </div>
+          <div class="stack">
+            <div class="pill-label">Richieste recenti</div>
+            <ul id="booking-list" class="card-list" aria-live="polite">
+              <li class="muted">Nessuna prenotazione ancora inserita.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" data-panel="comunicazioni" id="comunicazioni">
+      <section class="hero compact">
+        <div class="hero-copy">
+          <p class="eyebrow">Comunicazioni</p>
+          <h1>Messaggi dallo studio</h1>
+          <p>Condividi aggiornamenti operativi con clienti e collaboratori.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Comunicazioni</p>
+            <h2>Cronologia messaggi</h2>
+          </div>
+          <p class="muted">Pubblica e consulta gli ultimi aggiornamenti senza lasciare la sezione.</p>
+        </div>
+        <div class="grid two-cols">
+          <div class="stack">
+            <form id="communication-form" class="stack" autocomplete="off">
+              <label for="communication-title">Titolo</label>
+              <input type="text" id="communication-title" name="title" required placeholder="Avviso di firma">
+
+              <label for="communication-body">Testo</label>
+              <textarea id="communication-body" name="body" rows="3" required placeholder="Aggiornamento o indicazioni operative"></textarea>
+
+              <div class="actions">
+                <button type="submit">Pubblica comunicazione</button>
+              </div>
+            </form>
+          </div>
+          <div class="stack">
+            <div class="pill-label">Cronologia</div>
+            <ul id="communication-list" class="timeline" aria-live="polite">
+              <li class="muted">Ancora nessuna comunicazione.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" data-panel="profilo" id="profilo">
+      <section class="hero compact">
+        <div class="hero-copy">
+          <p class="eyebrow">Profilo</p>
+          <h1>Le tue informazioni</h1>
+          <p>Aggiorna contatti e preferenze, tenendo separata la vista dalle altre aree.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <div>
+            <p class="eyebrow">Profilo</p>
+            <h2>Gestione dati personali</h2>
+          </div>
+          <p class="muted">Modifica le informazioni per sincronizzare le notifiche.</p>
+        </div>
+        <div class="grid two-cols compact">
+          <form id="profile-form" class="stack" autocomplete="off">
+            <label for="profile-name">Nome completo</label>
+            <input type="text" id="profile-name" name="name" placeholder="Nome e cognome">
+
+            <label for="profile-role">Ruolo</label>
+            <input type="text" id="profile-role" name="role" placeholder="Notaio, assistente, legale">
+
+            <label for="profile-email">Email</label>
+            <input type="email" id="profile-email" name="email" placeholder="nome@studio.it">
+
+            <label for="profile-phone">Telefono</label>
+            <input type="tel" id="profile-phone" name="phone" placeholder="Recapito diretto">
+
+
+            <div class="actions">
+              <button type="submit">Salva profilo</button>
+            </div>
+          </form>
+          <div class="stack">
+            <div class="pill-label">Anteprima profilo</div>
+            <div id="profile-summary" class="detail-section">
+              <p class="muted">Completa i campi per vedere un riepilogo pronto all'uso.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </section>
 
     <div class="modal" id="record-modal" role="dialog" aria-modal="true" aria-labelledby="record-modal-title" aria-hidden="true">
