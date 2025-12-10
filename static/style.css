@@ -251,6 +251,12 @@ textarea:focus {
   box-shadow: var(--shadow);
 }
 
+.upload-card.is-dragging .file-label {
+  border-color: var(--accent-alt);
+  background: #eef4fb;
+  box-shadow: var(--shadow);
+}
+
 .file-button {
   padding: 0.6rem 1rem;
   background: linear-gradient(90deg, var(--accent), var(--accent-alt));

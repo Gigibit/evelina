@@ -190,14 +190,72 @@ function setupResultDetails() {
 function setupFilePicker() {
   const fileInput = document.querySelector("input[type=file]#atto");
   const fileName = document.getElementById("file-name");
+  const uploadCard = document.querySelector(".upload-card");
+  const archivePanel = document.querySelector('.panel[data-panel="archivio"]');
+  let dragDepth = 0;
 
   if (!fileInput || !fileName) {
     return;
   }
 
+  const isArchiveActive = () => !archivePanel || archivePanel.classList.contains("is-active");
+
+  const enableDragging = (event) => {
+    if (!isArchiveActive()) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepth += 1;
+    uploadCard?.classList.add("is-dragging");
+  };
+
+  const handleDragLeave = (event) => {
+    if (!isArchiveActive()) {
+      return;
+    }
+
+    if (!event.relatedTarget || !uploadCard?.contains(event.relatedTarget)) {
+      dragDepth = Math.max(0, dragDepth - 1);
+    }
+
+    if (dragDepth === 0) {
+      uploadCard?.classList.remove("is-dragging");
+    }
+  };
+
+  document.addEventListener("dragenter", enableDragging);
+  document.addEventListener("dragover", (event) => {
+    if (!isArchiveActive()) {
+      return;
+    }
+
+    event.preventDefault();
+  });
+
+  document.addEventListener("dragleave", handleDragLeave);
+
+  document.addEventListener("drop", (event) => {
+    if (!isArchiveActive()) {
+      return;
+    }
+
+    event.preventDefault();
+    uploadCard?.classList.remove("is-dragging");
+    dragDepth = 0;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length) {
+      fileInput.files = files;
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  });
+
   fileInput.addEventListener("change", () => {
     const name = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : "Nessun file selezionato";
     fileName.textContent = name;
+    uploadCard?.classList.remove("is-dragging");
+    dragDepth = 0;
   });
 }
 
