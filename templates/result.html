@@ -7,6 +7,23 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <header class="taskbar" aria-label="Navigazione principale">
+    <div class="taskbar-brand">
+      <img src="{{ url_for('static', filename='brand-logo.svg') }}" alt="Il Notaio per Te" />
+      <div>
+        <p class="eyebrow">Il Notaio per Te</p>
+        <strong>Scrivania Notarile</strong>
+      </div>
+    </div>
+    <nav class="taskbar-nav" aria-label="Sezioni applicazione">
+      <a class="taskbar-btn" href="{{ url_for('index') }}#archivio">Archivio atti</a>
+      <a class="taskbar-btn" href="{{ url_for('index') }}#appuntamenti">Appuntamenti</a>
+      <a class="taskbar-btn" href="{{ url_for('index') }}#prenotazioni">Prenotazioni</a>
+      <a class="taskbar-btn" href="{{ url_for('index') }}#comunicazioni">Comunicazioni</a>
+      <a class="taskbar-btn" href="{{ url_for('index') }}#profilo">Profilo</a>
+    </nav>
+  </header>
+
   <main class="container">
     <div class="top-bar">
       <div class="brand-mark">
